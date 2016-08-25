@@ -550,13 +550,14 @@ def send_mail(sub,content,to_list=RECEIVER_EMAIL_ACCOUNTS):
     mail_pass=SENDER_EMAIL_PASSWD #口令
 
     me=mail_user
-    msg = MIMEText(content,_subtype='plain',_charset='UTF-8')
-    msg['Subject'] = sub
+    msg = MIMEText(content,_subtype='LOGIN',_charset='UTF-8')
+    msg['Subject'] = '变更！'+sub
     msg['From'] = me
     msg['To'] = ";".join(to_list)
     try:
         server = smtplib.SMTP()
-        server.connect(mail_host)
+        server.connect(mail_host, 587)
+        server.starttls()
         server.login(mail_user,mail_pass)
         server.sendmail(me, to_list, msg.as_string())
         server.close()
@@ -646,7 +647,7 @@ def Run():
 
             ########################################################
             #stock status：
-            if curr_stock!=prev_stock and curr_stock == "有货":
+            if curr_stock!=prev_stock and curr_stock == "现货":
                 if QUERY_STOCK:
                     news_type="货"
                 print("库存变化！")
