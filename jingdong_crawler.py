@@ -263,6 +263,7 @@ class Product:
     def __init__(self,id_i):
         self.id_i=id_i
         self.url="http://item.m.jd.com/product/"+self.id_i+".html?provinceId=%d&cityId=%d&countryId=%d"%(PROVINCEID, CITYID, COUNTYID)
+        self.price_urls={'p':'https://p.3.cn/prices/get?type=1&area=19_1684_19467_0&pdtk=&pduid&pdpin=&pdbp=0&skuid=J_' + self.id_i, 'm':'https://pm.3.cn/prices/mgets?origin=2&area=19_1684_19467_0&pdtk=&pduid=&pdpin=&pdbp=0&skuIds=' + self.id_i, 'w':'https://pe.3.cn/prices/mgets?origin=5&area=19_1684_19467_0&pdtk=&pduid=&pdpin=&pdbp=0&skuids=' + self.id_i, 'q':'https://pe.3.cn/prices/mgets?origin=4&area=19_1684_19467_0&pdtk=&pduid=&pdpin=&pdbp=0&skuids=' + self.id_i}
         self.page=None
         self.html=None
         self._compile_regex_object()
@@ -331,7 +332,40 @@ class Product:
             print("无法获取价格...")
             time.sleep(4)
             return MAX_PRICE
+			
+    def get_prices(self):
+        global price_p
+        data={}
+        for k, v in self.price_urls.items():
+            try:
+                data[k]=self.get_price_json(k)
+            except TypeError:
+                beep()
+                print("平台「" + k + "」价格获取失败...")
+                time.sleep(1)
+                continue
+        if len(data) > 0:
+            p=min(data.items(), key=lambda x: x[1])[0]
+            price=float(data[p])
+            price_p = p
+            return price
+        else:
+            return MAX_PRICE
 
+    def get_price_json(self, platform):
+        try:
+            self.page=urllib.request.urlopen(self.price_urls[platform])
+            content=json.loads(self.page.read().decode("utf-8"))
+            return content[0]['p']
+        except Exception as e:
+            print(str(e))
+            beep()
+            print(time.ctime())
+            print("无法下载网页。1秒后重试...")
+            time.sleep(1)
+            self.get_price_json(platform)
+            return None
+    
     def get_detail(self):
         detail = self._parse_content(self.re_compile_detail)
         if detail == None:
@@ -579,6 +613,7 @@ def Run():
     #JD goods id.
     ID=re.findall(r"/([\d]+).ht", MONITORING_ADDR)
     ID=list(set(ID))
+    platform={'p':'PC端', 'm':'移动端', 'w':'微信端', 'q':'手Q端'}
     while(True):
         #Endless querying with sleep interval, until user quit the program.
         count+=1
@@ -608,6 +643,8 @@ def Run():
             product.load_html()
 
             curr_price=product.get_price()
+            if product.get_prices() == curr_price:
+                price_p='m'
             curr_title=product.get_title()
             curr_promo=product.get_promotion()
             curr_detail=product.get_detail()
@@ -691,8 +728,8 @@ def Run():
                 print(prev_price)
                 print(curr_price)
                 if QUERY_PRICE:
-                    news_type="降"
-                print("降！ %.1f"%(prev_price-curr_price))
+                    news_type=platform[price_p] + "降"
+                print(platform[price_p]+"降！ %.1f"%(prev_price-curr_price))
                 change_print+=url_i+"\n"+curr_title[0:10]+": "+str(curr_price)+"降！ %.1f"%(prev_price-curr_price)+"\n\n"
             if curr_price!=prev_price:
                 result.set_prev_price(id_i, curr_price)
@@ -703,7 +740,7 @@ def Run():
             message = u"地址      ："+address+"\n"+          \
                       u"物品      ："+curr_title+"\n"+       \
                       u"描述      ："+curr_detail+"\n"+      \
-                      u"移动端价格："+str(curr_price)+"\n"+  \
+                      u"" + platform[price_p] + "价格："+str(curr_price)+"\n"+  \
                       u"移动端优惠："+str(curr_mobi)+"\n"+   \
                       u"有货否    ："+curr_stock+"\n"+       \
                       u"活动      ："+curr_promo+"\n"+       \
