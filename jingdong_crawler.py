@@ -336,6 +336,7 @@ class Product:
     def get_prices(self):
         data={}
         for k, v in self.price_urls.items():
+            time.sleep(1)
             try:
                 data[k]=self.get_price_json(k)
             except TypeError:
