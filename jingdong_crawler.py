@@ -334,7 +334,6 @@ class Product:
             return MAX_PRICE
 			
     def get_prices(self):
-        global price_p
         data={}
         for k, v in self.price_urls.items():
             try:
@@ -356,7 +355,7 @@ class Product:
         try:
             self.page=urllib.request.urlopen(self.price_urls[platform])
             content=json.loads(self.page.read().decode("utf-8"))
-            return content[0]['p']
+            return float(content[0]['p'])
         except Exception as e:
             print(str(e))
             beep()
@@ -584,7 +583,7 @@ def send_mail(sub,content,to_list=RECEIVER_EMAIL_ACCOUNTS):
     mail_pass=SENDER_EMAIL_PASSWD #口令
 
     me=mail_user
-    msg = MIMEText(content,_subtype='LOGIN',_charset='UTF-8')
+    msg = MIMEText(content,_subtype='plain',_charset='UTF-8')
     msg['Subject'] = '变更！'+sub
     msg['From'] = me
     msg['To'] = ";".join(to_list)
@@ -608,6 +607,8 @@ def send_mail(sub,content,to_list=RECEIVER_EMAIL_ACCOUNTS):
             return False
 
 def Run():
+    global price_p
+    price_p='m'
     #Counting querying times.
     count=0
     #JD goods id.
@@ -643,8 +644,11 @@ def Run():
             product.load_html()
 
             curr_price=product.get_price()
-            if product.get_prices() == curr_price:
+            curr_price_min_in_multi = product.get_prices()
+            if curr_price_min_in_multi >= curr_price:
                 price_p='m'
+            else:
+                curr_price = curr_price_min_in_multi
             curr_title=product.get_title()
             curr_promo=product.get_promotion()
             curr_detail=product.get_detail()
