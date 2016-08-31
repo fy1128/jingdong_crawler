@@ -335,6 +335,7 @@ class Product:
             return MAX_PRICE
 			
     def get_prices(self):
+        global price_p
         data={}
         for k, v in self.price_urls.items():
             time.sleep(1)
