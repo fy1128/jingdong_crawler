@@ -265,6 +265,15 @@ class Product:
         self.url="http://item.m.jd.com/product/"+self.id_i+".html?provinceId=%d&cityId=%d&countryId=%d"%(PROVINCEID, CITYID, COUNTYID)
         #self.price_urls={'p':'https://p.3.cn/prices/get?type=1&area=19_1684_19467_0&pdtk=&pduid&pdpin=&pdbp=0&skuid=J_' + self.id_i, 'm':'https://pm.3.cn/prices/mgets?origin=2&area=19_1684_19467_0&pdtk=&pduid=&pdpin=&pdbp=0&skuIds=' + self.id_i, 'w':'https://pe.3.cn/prices/mgets?origin=5&area=19_1684_19467_0&pdtk=&pduid=&pdpin=&pdbp=0&skuids=' + self.id_i, 'q':'https://pe.3.cn/prices/mgets?origin=4&area=19_1684_19467_0&pdtk=&pduid=&pdpin=&pdbp=0&skuids=' + self.id_i}
         self.price_urls={'m':'https://pm.3.cn/prices/mgets?origin=2&area=19_1684_19467_0&pdtk=&pduid=&pdpin=&pdbp=0&skuIds=' + self.id_i, 'w':'https://pe.3.cn/prices/mgets?origin=5&area=19_1684_19467_0&pdtk=&pduid=&pdpin=&pdbp=0&skuids=' + self.id_i, 'q':'https://pe.3.cn/prices/mgets?origin=4&area=19_1684_19467_0&pdtk=&pduid=&pdpin=&pdbp=0&skuids=' + self.id_i}
+        self.headers={
+            'Accept':'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+            'Accept-Language':'zh-CN,zh;q=0.8,en;q=0.6',
+            'Connection':'keep-alive',
+            'Host':'item.m.jd.com',
+            'Referer':'http://m.jd.com',
+            'Upgrade-Insecure-Requests':'1',
+            'User-Agent':'Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/46.0.2490.76 Mobile Safari/537.36'
+	}
         self.page=None
         self.html=None
         self._compile_regex_object()
@@ -295,7 +304,9 @@ class Product:
 
     def load_html(self):
         try:
-            self.page=urllib.request.urlopen(self.url)
+            req=urllib.request.Request(self.url, headers=self.headers)
+            self.page=urllib.request.urlopen(req)
+            #print(self.page.getcode())
         except Exception as e:
             print(str(e))
             beep()
