@@ -18,6 +18,11 @@ import sys
 import webbrowser
 import codecs
 
+try:
+    from http.cookiejar import CookieJar
+except ImportError:
+    from cookielib import CookieJar
+
 def beep():
     """play an alarm."""
     print("\a")
@@ -257,12 +262,17 @@ RECEIVER_EMAIL_ACCOUNTS=settings.get_receiver_email_account()
 
 
 
+class MyHTTPRedirectHandler(urllib.request.HTTPRedirectHandler):
+    def http_error_302(self, req, fp, code, msg, headers):
+        #print(cookieprocessor.cookiejar)
+        return urllib.request.HTTPRedirectHandler.http_error_302(self, req, fp, code, msg, headers)
 
+    http_error_301 = http_error_303 = http_error_307 = http_error_302
 
 class Product:
     def __init__(self,id_i):
         self.id_i=id_i
-        self.url="http://item.m.jd.com/product/"+self.id_i+".html?provinceId=%d&cityId=%d&countryId=%d"%(PROVINCEID, CITYID, COUNTYID)
+        self.url="https://item.m.jd.com/product/"+self.id_i+".html?provinceId=%d&cityId=%d&countryId=%d"%(PROVINCEID, CITYID, COUNTYID)
         #self.price_urls={'p':'https://p.3.cn/prices/get?type=1&area=19_1684_19467_0&pdtk=&pduid&pdpin=&pdbp=0&skuid=J_' + self.id_i, 'm':'https://pm.3.cn/prices/mgets?origin=2&area=19_1684_19467_0&pdtk=&pduid=&pdpin=&pdbp=0&skuIds=' + self.id_i, 'w':'https://pe.3.cn/prices/mgets?origin=5&area=19_1684_19467_0&pdtk=&pduid=&pdpin=&pdbp=0&skuids=' + self.id_i, 'q':'https://pe.3.cn/prices/mgets?origin=4&area=19_1684_19467_0&pdtk=&pduid=&pdpin=&pdbp=0&skuids=' + self.id_i}
         self.price_urls={'m':'https://pm.3.cn/prices/mgets?origin=2&area=19_1684_19467_0&pdtk=&pduid=&pdpin=&pdbp=0&skuIds=' + self.id_i, 'w':'https://pe.3.cn/prices/mgets?origin=5&area=19_1684_19467_0&pdtk=&pduid=&pdpin=&pdbp=0&skuids=' + self.id_i, 'q':'https://pe.3.cn/prices/mgets?origin=4&area=19_1684_19467_0&pdtk=&pduid=&pdpin=&pdbp=0&skuids=' + self.id_i}
         self.headers={
@@ -304,8 +314,13 @@ class Product:
 
     def load_html(self):
         try:
-            req=urllib.request.Request(self.url, headers=self.headers)
-            self.page=urllib.request.urlopen(req)
+            cj = CookieJar()
+            opener = urllib.request.build_opener(MyHTTPRedirectHandler, urllib.request.HTTPCookieProcessor(cj))
+            urllib.request.install_opener(opener)
+            #req=urllib.request.Request(self.url, headers=self.headers)            
+            #self.page=urllib.request.urlopen(req)
+            opener.addheaders = [('Accept', '*/*'), ('Connection', 'keep-alive'), ('Host', 'item.m.jd.com'), ('Referer', 'http://m.jd.com'), ('User-Agent', 'Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/46.0.2490.76 Mobile Safari/537.36')]
+            self.page=urllib.request.urlopen(self.url)
             #print(self.page.getcode())
         except Exception as e:
             print(str(e))
@@ -411,7 +426,7 @@ class Product:
             #Escape the " for eval use.
             content = json.loads(response.read().decode("utf-8"))["coupon"].replace("true", "\"true\"").replace("false", "\"false\"")
         except KeyError:
-        	content = ""
+        	content = "{}"
         response.close()
         content = ast.literal_eval(content)
         coupon_text = ""
