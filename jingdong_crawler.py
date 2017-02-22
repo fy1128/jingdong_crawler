@@ -320,7 +320,7 @@ class Product:
             #req=urllib.request.Request(self.url, headers=self.headers)            
             #self.page=urllib.request.urlopen(req)
             opener.addheaders = [('Accept', '*/*'), ('Connection', 'keep-alive'), ('Host', 'item.m.jd.com'), ('Referer', 'http://m.jd.com'), ('User-Agent', 'Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/46.0.2490.76 Mobile Safari/537.36')]
-            self.page=urllib.request.urlopen(self.url)
+            self.page=urllib.request.urlopen(self.url, timeout=30)
             #print(self.page.getcode())
         except Exception as e:
             print(str(e))
@@ -382,7 +382,7 @@ class Product:
 
     def get_price_json(self, platform):
         try:
-            self.page=urllib.request.urlopen(self.price_urls[platform])
+            self.page=urllib.request.urlopen(self.price_urls[platform], timeout=30)
             content=json.loads(self.page.read().decode("utf-8"))
             return float(content[0]['p'])
         except Exception as e:
@@ -420,7 +420,7 @@ class Product:
         #Communication procedure seen on httptrace extension in Chrome.
         headers = {"Connection": "keep-alive", "Content-Type": "application/x-www-form-urlencoded"}
         req = urllib.request.Request(url = 'http://item.m.jd.com/coupon/coupon.json', data = bytes("wareId=%s"%self.id_i, "ascii"), headers = headers, method = "POST")
-        response = urllib.request.urlopen(req)
+        response = urllib.request.urlopen(req, timeout=30)
 
         try:
             #Escape the " for eval use.
