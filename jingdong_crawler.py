@@ -314,7 +314,7 @@ class Product:
 
     def load_html(self):
         while True:
-           try:
+            try:
                 cj = CookieJar()
                 opener = urllib.request.build_opener(MyHTTPRedirectHandler, urllib.request.HTTPCookieProcessor(cj))
                 urllib.request.install_opener(opener)
@@ -330,6 +330,7 @@ class Product:
                 print(time.ctime())
                 print("无法下载网页。1秒后重试...")
                 time.sleep(1)
+                pass
         self.html=self.page.read()
         self.page.close()
 
