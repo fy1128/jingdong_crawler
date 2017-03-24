@@ -283,7 +283,7 @@ class Product:
             'Referer':'http://m.jd.com',
             'Upgrade-Insecure-Requests':'1',
             'User-Agent':'Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/46.0.2490.76 Mobile Safari/537.36'
-	}
+    }
         self.page=None
         self.html=None
         self._compile_regex_object()
@@ -313,23 +313,23 @@ class Product:
 
 
     def load_html(self):
-        try:
-            cj = CookieJar()
-            opener = urllib.request.build_opener(MyHTTPRedirectHandler, urllib.request.HTTPCookieProcessor(cj))
-            urllib.request.install_opener(opener)
-            #req=urllib.request.Request(self.url, headers=self.headers)            
-            #self.page=urllib.request.urlopen(req)
-            opener.addheaders = [('Accept', '*/*'), ('Connection', 'keep-alive'), ('Host', 'item.m.jd.com'), ('Referer', 'http://m.jd.com'), ('User-Agent', 'Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/46.0.2490.76 Mobile Safari/537.36')]
-            self.page=urllib.request.urlopen(self.url, timeout=30)
-            #print(self.page.getcode())
-        except Exception as e:
-            print(str(e))
-            beep()
-            print(time.ctime())
-            print("无法下载网页。1秒后重试...")
-            time.sleep(1)
-            self.load_html()
-            return None
+        while True:
+           try:
+                cj = CookieJar()
+                opener = urllib.request.build_opener(MyHTTPRedirectHandler, urllib.request.HTTPCookieProcessor(cj))
+                urllib.request.install_opener(opener)
+                #req=urllib.request.Request(self.url, headers=self.headers)            
+                #self.page=urllib.request.urlopen(req)
+                opener.addheaders = [('Accept', '*/*'), ('Connection', 'keep-alive'), ('Host', 'item.m.jd.com'), ('Referer', 'http://m.jd.com'), ('User-Agent', 'Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/46.0.2490.76 Mobile Safari/537.36')]
+                self.page=urllib.request.urlopen(self.url, timeout=30)
+                #print(self.page.getcode())
+                break
+            except Exception as e:
+                print(str(e))
+                beep()
+                print(time.ctime())
+                print("无法下载网页。1秒后重试...")
+                time.sleep(1)
         self.html=self.page.read()
         self.page.close()
 
@@ -359,7 +359,7 @@ class Product:
             print("无法获取价格...")
             time.sleep(4)
             return MAX_PRICE
-			
+            
     def get_prices(self):
         global price_p
         data={}
@@ -426,7 +426,7 @@ class Product:
             #Escape the " for eval use.
             content = json.loads(response.read().decode("utf-8"))["coupon"].replace("true", "\"true\"").replace("false", "\"false\"")
         except KeyError:
-        	content = "{}"
+            content = "{}"
         response.close()
         content = ast.literal_eval(content)
         coupon_text = ""
