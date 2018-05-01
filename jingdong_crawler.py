@@ -280,7 +280,7 @@ class Product:
             'Accept-Language':'zh-CN,zh;q=0.8,en;q=0.6',
             'Connection':'keep-alive',
             'Host':'item.m.jd.com',
-            'Referer':'http://m.jd.com',
+            'Referer':'https://m.jd.com',
             'Upgrade-Insecure-Requests':'1',
             'User-Agent':'Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/46.0.2490.76 Mobile Safari/537.36'
     }
@@ -320,7 +320,7 @@ class Product:
                 urllib.request.install_opener(opener)
                 #req=urllib.request.Request(self.url, headers=self.headers)            
                 #self.page=urllib.request.urlopen(req)
-                opener.addheaders = [('Accept', '*/*'), ('Connection', 'keep-alive'), ('Host', 'item.m.jd.com'), ('Referer', 'http://m.jd.com'), ('User-Agent', 'Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/46.0.2490.76 Mobile Safari/537.36')]
+                opener.addheaders = [('Accept', '*/*'), ('Connection', 'keep-alive'), ('Host', 'item.m.jd.com'), ('Referer', 'https://m.jd.com'), ('User-Agent', 'Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/46.0.2490.76 Mobile Safari/537.36')]
                 self.page=urllib.request.urlopen(self.url, timeout=30)
                 #print(self.page.getcode())
                 break
@@ -420,12 +420,12 @@ class Product:
         """Use post method to query whether there is a coupon."""
         #Communication procedure seen on httptrace extension in Chrome.
         headers = {"Connection": "keep-alive", "Content-Type": "application/x-www-form-urlencoded"}
-        req = urllib.request.Request(url = 'http://item.m.jd.com/coupon/coupon.json', data = bytes("wareId=%s"%self.id_i, "ascii"), headers = headers, method = "POST")
+        req = urllib.request.Request(url = 'https://item.m.jd.com/coupon/coupon.json', data = bytes("wareId=%s"%self.id_i, "ascii"), headers = headers, method = "POST")
         response = urllib.request.urlopen(req, timeout=30)
 
         try:
             #Escape the " for eval use.
-            content = json.loads(response.read().decode("utf-8"))["coupon"].replace("true", "\"true\"").replace("false", "\"false\"")
+            content = json.dumps(json.loads(response.read().decode("utf-8"))["coupon"]).replace("true", "\"true\"").replace("false", "\"false\"")
         except KeyError:
             content = "{}"
         response.close()
@@ -601,7 +601,7 @@ class Result:
 def internet_on():
     """Check if computer is online. Return type: boolean."""
     try:
-        response=urllib.request.urlopen("http://www.baidu.com",timeout=100)
+        response=urllib.request.urlopen("https://www.baidu.com",timeout=100)
         return True
     except Exception as e:
         print(str(e))
@@ -655,7 +655,7 @@ def Run():
         #For each link setted in file.
         for id_i in ID:
             time.sleep(random.randint(100,200)/1000)
-            url_i = "http://item.m.jd.com/product/"+id_i+".html?provinceId=%d&cityId=%d&countryId=%d"%(PROVINCEID, CITYID, COUNTYID)
+            url_i = "https://item.m.jd.com/product/"+id_i+".html?provinceId=%d&cityId=%d&countryId=%d"%(PROVINCEID, CITYID, COUNTYID)
             print("++++++++++++++++++++++++++++++++++++++++++++++++++++")
 
             product=Product(id_i)
@@ -846,7 +846,7 @@ if __name__ == '__main__':
 #Price: another way to obtain
 import requests
 pids=1217524
-url="http://p.3.cn/prices/mgets?skuIds=J_1217524"# + str(pids)
+url="https://p.3.cn/prices/mgets?skuIds=J_1217524"# + str(pids)
 
 ret=requests.get(url)
 print(ret)
